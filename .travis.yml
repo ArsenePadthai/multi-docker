@@ -1,0 +1,22 @@
+sudo: required
+serivces:
+  - docker
+
+before_install:
+  - docker build -t zhipeng/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run zhipeng/react-test npm test npm test
+
+after_success:
+  - docker build -t zhipeng/multi-client ./client
+  - docker build -t zhipeng/multi-server ./server
+  - docker build -t zhipeng/multi-nginx ./nginx
+  - docker build -t zhipeng/multi-worker ./worker
+  # Log in to the docker CLI
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  # Take those steps images and push them to docker hub
+  - docker push zhipeng/multi-client
+  - docker push zhipeng/multi-nginx
+  - docker push zhipeng/multi-server
+  - docker push zhipeng/multi-worker
